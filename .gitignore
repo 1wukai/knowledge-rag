@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+uv.lock.bak
+
+# 本地环境与密钥
+.env
+
+# 前端
+web/node_modules/
+web/.installed
+
+# Go
+gateway/gateway
+
+# 数据与运行时
+data/*.local.json
+data/runtime_settings.json
+data/index_state.json
+data/qdrant_local/
+eval/reports/
+
+# 运行时日志
+*.log

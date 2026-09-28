@@ -1,0 +1,12 @@
+# Go 网关镜像：多阶段构建，产物为静态二进制。
+FROM golang:1.24-alpine AS build
+WORKDIR /src
+COPY go.mod ./
+COPY cmd ./cmd
+RUN CGO_ENABLED=0 go build -o /gateway ./cmd/gateway
+
+FROM alpine:3.20
+RUN adduser -D -u 10001 app
+COPY --from=build /gateway /gateway
+USER app
+ENTRYPOINT ["/gateway"]

@@ -1,0 +1,115 @@
+# 本地开发与调试编排。
+# 默认 `make dev` 启动 infra + mock-model + app 三个 profile。
+# 端口仅绑定 127.0.0.1，避免对外暴露。
+
+name: interview-rag
+
+services:
+  mysql:
+    image: mysql:8.4
+    profiles: ["infra"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-rag}
+      MYSQL_USER: ${MYSQL_USER:-rag}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-rag}
+    ports:
+      - "127.0.0.1:${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    profiles: ["infra"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  qdrant:
+    image: qdrant/qdrant:v1.19.0
+    profiles: ["infra"]
+    ports:
+      - "127.0.0.1:${QDRANT_HTTP_PORT:-6333}:6333"
+      - "127.0.0.1:${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    restart: unless-stopped
+
+  mock-model:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.python
+    profiles: ["mock-model"]
+    command: ["uv", "run", "interview-rag-mock"]
+    ports:
+      - "127.0.0.1:8001:8001"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.python
+    profiles: ["app"]
+    command: ["uv", "run", "interview-rag-api"]
+    environment:
+      IR_ENVIRONMENT: ${IR_ENVIRONMENT:-dev}
+      IR_LOG_LEVEL: ${IR_LOG_LEVEL:-INFO}
+      IR_LOG_JSON: ${IR_LOG_JSON:-true}
+      IR_WORKSPACE_ROOT: ${IR_WORKSPACE_ROOT:-/workspace}
+      IR_DATABASE_URL: ${IR_DATABASE_URL:-mysql+aiomysql://rag:rag@mysql:3306/rag}
+      IR_REDIS_URL: ${IR_REDIS_URL:-redis://redis:6379/0}
+      IR_QDRANT_URL: ${IR_QDRANT_URL:-http://qdrant:6333}
+      IR_MODELS_MOCK: ${IR_MODELS_MOCK:-true}
+      IR_GENERATION_BASE_URL: ${IR_GENERATION_BASE_URL:-http://mock-model:8001/v1}
+      IR_GENERATION_MODEL: ${IR_GENERATION_MODEL:-mock-chat}
+      IR_GENERATION_API_KEY: ${IR_GENERATION_API_KEY:-}
+      IR_EMBEDDING_BASE_URL: ${IR_EMBEDDING_BASE_URL:-http://mock-model:8001/v1}
+      IR_EMBEDDING_MODEL: ${IR_EMBEDDING_MODEL:-mock-embedding}
+      IR_EMBEDDING_API_KEY: ${IR_EMBEDDING_API_KEY:-}
+      IR_RERANK_BASE_URL: ${IR_RERANK_BASE_URL:-http://mock-model:8001/v1}
+      IR_RERANK_MODEL: ${IR_RERANK_MODEL:-mock-rerank}
+      IR_RERANK_API_KEY: ${IR_RERANK_API_KEY:-}
+    volumes:
+      # 语料目录只读挂载，供 manifest 校验与后续入库读取。
+      - ../corpus:/workspace/corpus:ro
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mock-model:
+        condition: service_started
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: ../gateway
+      dockerfile: ../deploy/Dockerfile.gateway
+    profiles: ["app"]
+    environment:
+      GATEWAY_ADDR: ${GATEWAY_ADDR:-:8080}
+      API_UPSTREAM: ${API_UPSTREAM:-http://api:8000}
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  redis-data:
+  qdrant-data:

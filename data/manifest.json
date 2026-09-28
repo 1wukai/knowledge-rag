@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "corpus_id": "bundled-agent-interview",
+  "documents": [
+    {
+      "doc_id": "stage-0-llm-basics",
+      "path": "corpus/agent-interview/00-llm-basics.md",
+      "title": "Stage 0：LLM 基础",
+      "hash": "sha256:54f7a2fd561dc759eb0da2dd84460504fb1b8741d33868ce2efc208be4e8b704",
+      "updated_at": "",
+      "enabled": true,
+      "category": "agent-interview"
+    },
+    {
+      "doc_id": "stage-1-embedding",
+      "path": "corpus/agent-interview/01-embedding.md",
+      "title": "Stage 1：Embedding 与向量检索",
+      "hash": "sha256:4f7e61a50e3f6cca0f111a9e0bb152d4069ef145a769a53a1612191ca3b3f2e2",
+      "updated_at": "",
+      "enabled": true,
+      "category": "agent-interview"
+    },
+    {
+      "doc_id": "stage-2-rag",
+      "path": "corpus/agent-interview/02-rag.md",
+      "title": "Stage 2：RAG 全链路",
+      "hash": "sha256:ac47c02c80ebb6fdc6837f7f60616163e6034f8581ba66271140b3c171a944ee",
+      "updated_at": "",
+      "enabled": true,
+      "category": "agent-interview"
+    },
+    {
+      "doc_id": "stage-3-agent",
+      "path": "corpus/agent-interview/03-agent.md",
+      "title": "Stage 3：Agent",
+      "hash": "sha256:953fe67eb4c03326f8f8e22b6856e98ecc1744a076fc0a932c6068c5c1bcc188",
+      "updated_at": "",
+      "enabled": true,
+      "category": "agent-interview"
+    },
+    {
+      "doc_id": "stage-4-engineering",
+      "path": "corpus/agent-interview/04-engineering.md",
+      "title": "Stage 4：工程化与评估",
+      "hash": "sha256:ed6b3e0b7f73d9174b92aafbc8edd0dca69e84c60ce4ded1335d5c2f5643338a",
+      "updated_at": "",
+      "enabled": true,
+      "category": "agent-interview"
+    }
+  ]
+}

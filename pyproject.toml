@@ -1,0 +1,38 @@
+[project]
+name = "interview-rag"
+version = "0.1.0"
+description = "面试知识库 RAG 问答系统：核心服务与入库 worker"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30,<1",
+    "pydantic>=2.8,<3",
+    "pydantic-settings>=2.4,<3",
+    "httpx>=0.27,<1",
+    "qdrant-client>=1.12,<2",
+    "sqlalchemy[asyncio]>=2.0,<3",
+    "aiomysql>=0.2,<1",
+    "alembic>=1.13,<2",
+    "arq>=0.26,<1",
+    "redis>=5.0,<7",
+    "jieba>=0.42,<1",
+    "pypdf>=6,<7",
+    "python-docx>=1.2,<2",
+]
+
+[project.scripts]
+interview-rag-api = "interview_rag.api.app:main"
+interview-rag-mock = "interview_rag.mock_model.app:main"
+interview-rag-manifest = "interview_rag.manifest:cli"
+interview-rag-worker = "interview_rag.worker.main:worker_main"
+interview-rag-dispatcher = "interview_rag.worker.main:dispatcher_main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/interview_rag"]
+
+[tool.uv]
+package = true
